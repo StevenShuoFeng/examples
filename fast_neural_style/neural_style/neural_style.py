@@ -138,6 +138,7 @@ def stylize(args):
             state_dict = torch.load(args.model)
             # remove saved deprecated running_* keys in InstanceNorm from the checkpoint
             for k in list(state_dict.keys()):
+                # print(k)
                 if re.search(r'in\d+\.running_(mean|var)$', k):
                     del state_dict[k]
             style_model.load_state_dict(state_dict)
@@ -167,6 +168,23 @@ def stylize_onnx_caffe2(content_image, args):
     c2_out = prepared_backend.run(inp)[0]
 
     return torch.from_numpy(c2_out)
+
+
+def stylize_dir(args):
+    print('*** stylize directory: ')
+    
+    import glob
+    fn_imgs = glob.glob(args.content_image_dir + '*.png')
+
+    for fn_im in fn_imgs:
+        print('transfer style for: {}'.format(fn_im))
+        args.content_image = fn_im
+        fn_out = fn_im.split('/')
+        fn_out[-1] = 'o_1_{}'.format(fn_out[-1])
+        args.output_image = '/'.join(fn_out)
+        print('output: {}'.format(args.output_image))
+        stylize(args)
+
 
 
 def main():
@@ -207,6 +225,8 @@ def main():
                                   help="number of batches after which a checkpoint of the trained model will be created")
 
     eval_arg_parser = subparsers.add_parser("eval", help="parser for evaluation/stylizing arguments")
+    eval_arg_parser.add_argument("--content-image-dir", type=str, required=True,
+                                 help="path to the directory of content images you want to stylize")
     eval_arg_parser.add_argument("--content-image", type=str, required=True,
                                  help="path to content image you want to stylize")
     eval_arg_parser.add_argument("--content-scale", type=float, default=None,
@@ -233,7 +253,10 @@ def main():
         check_paths(args)
         train(args)
     else:
-        stylize(args)
+        if not args.content_image_dir:
+            stylize(args)
+        else:
+            stylize_dir(args)
 
 
 if __name__ == "__main__":
