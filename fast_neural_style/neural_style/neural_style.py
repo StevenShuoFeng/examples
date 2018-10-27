@@ -225,7 +225,7 @@ def main():
                                   help="number of batches after which a checkpoint of the trained model will be created")
 
     eval_arg_parser = subparsers.add_parser("eval", help="parser for evaluation/stylizing arguments")
-    eval_arg_parser.add_argument("--content-image-dir", type=str, required=True,
+    eval_arg_parser.add_argument("--content-image-dir", type=str, required=False,
                                  help="path to the directory of content images you want to stylize")
     eval_arg_parser.add_argument("--content-image", type=str, required=True,
                                  help="path to content image you want to stylize")
